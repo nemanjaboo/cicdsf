@@ -1,5 +1,5 @@
 public with sharing class GitTestClass {
     public static void letsGo() {
-        system.debug('Deployment34');
+        system.debug('Deployment45');
     }
 }
