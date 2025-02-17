@@ -10,19 +10,22 @@ on:
       environment:
         description: "Deploy to which environment?"
         required: true
-        default: "playground"
+        default: "siblings"
         type: choice
         options:
-          - playground
+          - siblings
+          - production
       validation_only:
         description: "Validation only? (true/false)"
         required: true
-        default: "false"
+        default: "true"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: playground
+
+    # Dynamically use the environment that was selected in the manual input
+    environment: ${{ github.event.inputs.environment }}
     
     steps:
       - name: Check out code
@@ -40,6 +43,8 @@ jobs:
       - name: Check Salesforce CLI version
         run: sfdx --version
 
+      # This step reads the environment-level secret named SFDX_AUTH_URL
+      # The user must create SFDX_AUTH_URL in both the "siblings" and "production" environments
       - name: Prepare Auth File
         run: echo "${{ secrets.SFDX_AUTH_URL }}" > sfdxurl.txt
 
