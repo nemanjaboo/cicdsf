@@ -22,7 +22,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    # Reference the same environment to use environment-level secrets
+    environment: playground
+    
     steps:
       # 1. Check out the code from the specified branch
       - name: Check out code
@@ -38,24 +40,21 @@ jobs:
           tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
           echo "$HOME/sfdx/bin" >> $GITHUB_PATH
 
-      # 3. Confirm sfdx is on PATH
+      # 3. Verify CLI install (in a new step so PATH is updated)
       - name: Check Salesforce CLI version
         run: sfdx --version
 
-      # 4. Decide which environment secret to use
-      - name: Select environment auth file
-        id: select_env
+      # 4. Write the Auth URL to a file
+      #    (Pulls 'SFDX_AUTH_URL' from the 'playground' environment secrets)
+      - name: Prepare Auth File
         run: |
-          if [ "${{ github.event.inputs.environment }}" = "playground" ]; then
-            echo "${{ secrets.SFDX_AUTH_URL }}" > sfdxurl.txt
-            echo "::set-output name=alias::playground"
-          fi
+          echo "${{ secrets.SFDX_AUTH_URL }}" > sfdxurl.txt
 
-      # 5. Authenticate to the chosen Salesforce org
+      # 5. Authenticate to Salesforce
       - name: Authenticate to Salesforce
         run: |
-          sfdx auth:sfdxurl:store -f sfdxurl.txt -a ${{ steps.select_env.outputs.alias }}
-      
+          sfdx auth:sfdxurl:store -f sfdxurl.txt -a PlaygroundAlias
+
       # 6. Deploy or Validate only
       - name: Deploy to Salesforce
         run: |
