@@ -1,7 +1,6 @@
 name: "Manual Deploy"
 
 on:
-  # Allows you to manually trigger this workflow from the Actions tab
   workflow_dispatch:
     inputs:
       target-branch:
@@ -23,24 +22,27 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       # 1. Check out the code from the specified branch
       - name: Check out code
         uses: actions/checkout@v3
         with:
-          ref: "${{ github.event.inputs['target-branch'] }}"
-          # fetch-depth: 0 if you need full commit history for delta builds, etc.
+          ref: "${{ github.event.inputs.target-branch }}"
       
-      # 2. Install Salesforce CLI (example method)
+      # 2. Install Salesforce CLI
       - name: Install Salesforce CLI
         run: |
           wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
           mkdir ~/sfdx
           tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
           echo "$HOME/sfdx/bin" >> $GITHUB_PATH
-          sfdx --version
 
-      # 3. Decide which environment secret to use
+      # 3. Confirm sfdx is on PATH
+      - name: Check Salesforce CLI version
+        run: sfdx --version
+
+      # 4. Decide which environment secret to use
       - name: Select environment auth file
         id: select_env
         run: |
@@ -49,15 +51,14 @@ jobs:
             echo "::set-output name=alias::playground"
           fi
 
-      # 4. Authenticate to the chosen Salesforce org
+      # 5. Authenticate to the chosen Salesforce org
       - name: Authenticate to Salesforce
         run: |
           sfdx auth:sfdxurl:store -f sfdxurl.txt -a ${{ steps.select_env.outputs.alias }}
       
-      # 5. Deploy or Validate only
+      # 6. Deploy or Validate only
       - name: Deploy to Salesforce
         run: |
-          # If validation_only = "true", add --checkonly. Otherwise do a full deploy.
           if [ "${{ github.event.inputs.validation_only }}" = "true" ]; then
             echo "Performing validation-only deploy..."
             sfdx force:source:deploy -p force-app --testlevel=RunLocalTests --checkonly
