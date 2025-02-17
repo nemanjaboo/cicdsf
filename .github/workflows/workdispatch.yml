@@ -64,3 +64,5 @@ jobs:
           else
             echo "Performing full deploy..."
             sfdx force:source:deploy -p force-app --testlevel=RunLocalTests
+          fi
+
