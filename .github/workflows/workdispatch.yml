@@ -10,11 +10,10 @@ on:
       environment:
         description: "Deploy to which environment?"
         required: true
-        default: "siblings"
+        default: "playground"
         type: choice
         options:
-          - siblings
-          - production
+          - playground
       validation_only:
         description: "Validation only? (true/false)"
         required: true
