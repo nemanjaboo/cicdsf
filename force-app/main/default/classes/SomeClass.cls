@@ -1,5 +1,5 @@
 public with sharing class SomeClass {
     public static void go() {
-        system.debug('SomeClass1555555');
+        system.debug('doing feature');
     }
 }
